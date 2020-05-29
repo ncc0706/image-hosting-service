@@ -1,7 +1,3 @@
-
-
 dependencies {
-    implementation "org.apache.httpcomponents:httpclient"
-    implementation "org.apache.httpcomponents:httpcore"
     implementation project(":github-spring-boot-autoconfigure")
 }
