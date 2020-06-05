@@ -32,10 +32,6 @@ import java.security.cert.X509Certificate;
 
 /**
  * Created by IntelliJ IDEA. <br/>
- *
- * @Auther: 牛玉贤 <br/>
- * @Date: 2018/8/21 11:27 <br/>
- * @Email: ncc0706@gmail.com <br/>
  */
 @Configuration
 public class RestClientConfiguration {

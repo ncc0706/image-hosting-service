@@ -1,5 +1,7 @@
 # Image hosting service
 
+javadoc 编译时有报红提示可能会在close时验签失败.
+
 ## issue
 第一次提交了个错误的 issue. 后来提交了个正确的, 这审核速度还真快.
 
