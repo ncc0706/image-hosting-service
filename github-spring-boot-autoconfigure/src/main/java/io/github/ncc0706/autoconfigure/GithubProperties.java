@@ -15,13 +15,13 @@ public class GithubProperties {
     // 仓库名称
     private String repos;
 
-    private String name;
+    private String token;
 
-    private String email;
+    private String name = "github api";
+
+    private String email = "github.api@gmail.com";
 
     private String message = "first commit";
-
-    private String token;
 
     public String getApi() {
         return api;

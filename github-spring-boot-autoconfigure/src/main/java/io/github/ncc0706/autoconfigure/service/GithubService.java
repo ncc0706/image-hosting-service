@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -35,12 +37,23 @@ public class GithubService {
         String encode = Base64Utils.encodeToString(file.getBytes());
 
         String originalFilename = file.getOriginalFilename();
-        String ext = originalFilename.substring(originalFilename.lastIndexOf("."), originalFilename.length());
+        String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
         String uuid = UUID.randomUUID().toString().replaceAll("-", "");
 
         String fileName = uuid + ext;
 
-        String url = githubProperties.getApi() + githubProperties.getUsername() + "/" + githubProperties.getRepos() + "/contents/" + fileName;
+        String github = githubProperties.getApi() + githubProperties.getUsername() + "/" + githubProperties.getRepos() + "/contents/{year}/{month}/{day}/{fileName}";
+        String jsdelivr = githubProperties.getJsdelivr() + githubProperties.getUsername() + "/" + githubProperties.getRepos() + "@latest/{year}/{month}/{day}/{fileName}";
+
+        LocalDate now = LocalDate.now();
+        Map<String, Object> uriParams = new HashMap<>();
+        uriParams.put("year", now.getYear());
+        uriParams.put("month", now.getMonth().getValue());
+        uriParams.put("day", now.getDayOfMonth());
+        uriParams.put("fileName", fileName);
+
+        github = UriComponentsBuilder.fromHttpUrl(github).buildAndExpand(uriParams).toUriString();
+        jsdelivr = UriComponentsBuilder.fromHttpUrl(jsdelivr).buildAndExpand(uriParams).toUriString();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
@@ -52,21 +65,18 @@ public class GithubService {
         committer.put("email", githubProperties.getEmail());
         params.put("committer", committer);
         params.put("content", encode);
-        String data = new ObjectMapper().writeValueAsString(params);
 
-        HttpEntity<String> httpEntity = new HttpEntity<>(data, headers);
-        ResponseEntity<String> exchange = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class);
+        HttpEntity<String> httpEntity = new HttpEntity<>(new ObjectMapper().writeValueAsString(params), headers);
+        ResponseEntity<String> exchange = restTemplate.exchange(github, HttpMethod.PUT, httpEntity, String.class);
 
         if (logger.isDebugEnabled()) {
             logger.debug("response: {}", exchange.getBody());
         }
 
-        String result = githubProperties.getJsdelivr() + githubProperties.getUsername() + "/" + githubProperties.getRepos() + "@latest/" + fileName;
-
         Map<String, String> resultMap = new HashMap<>();
-        resultMap.put("url", result);
-        resultMap.put("UBB", "[img]" + result + "[/img]");
-        resultMap.put("markdown", "![](" + result + ")");
+        resultMap.put("url", jsdelivr);
+        resultMap.put("UBB", "[img]" + jsdelivr + "[/img]");
+        resultMap.put("markdown", "![](" + jsdelivr + ")");
         return resultMap;
     }
 }
